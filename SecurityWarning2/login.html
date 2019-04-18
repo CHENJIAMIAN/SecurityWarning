@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>安全预警系统</title>
+        <link rel="stylesheet" href="css/login/login_style.css">
+        <style>
+            img {
+                position: absolute;
+                height: 31px;
+                padding-top: 8px;
+                padding-left: 9px;
+            }
+
+            #nav {
+                background: #22cb64;
+                height: 50px;
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                right: 0px;
+                width: 100%;
+            }
+
+            .logo {
+                float: left;
+                font-size: 20px;
+                padding: 0px 10px;
+            }
+
+            .logo-img {
+                background: url(../img/webmap.png) 557px -4px;
+                background-size: 300px 314px;
+                width: 49px;
+                height: 34px;
+                top: 8px;
+                display: inline-block;
+                position: relative;
+            }
+
+            #nav > div > a {
+                color: white;
+                text-decoration: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="nav">
+            <div class="logo">
+                <div class="logo-img"></div>
+                <a href="#">安全预警系统
+            </a>
+            </div>
+        </div>
+        <form>
+            <div class="groupUser">
+                <img src="../../img/yonghu.png">
+                <input type="text" id="username">
+                <span class="highlight"></span>
+                <span class="bar"></span>
+            </div>
+            <div class="groupPass">
+                <img src="../../img/mima.png">
+                <input type="password" id="password">
+                <span class="highlight"></span>
+                <span class="bar"></span>
+            </div>
+            <button type="button" class="button buttonBlue" id="login">
+                登录
+            
+                
+                
+                
+                
+                <div class="ripples buttonRipples">
+                    <span class="ripplesCircle"></span>
+                </div>
+            </button>
+            <button type="button" class="button buttonLight" id="regist">
+                注册
+            
+                
+                
+                
+                
+                <div class="ripples buttonRipples">
+                    <span class="ripplesCircle"></span>
+                </div>
+            </button>
+        </form>
+        <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js'></script>
+        <script src="js/login/login_index.js"></script>
+        <script>
+            $(function() {
+                $('#login').click(()=>{
+                    $.ajax({
+                        type: "post",
+                        url: "HttpHandler/loginHandler.ashx",
+                        data: {
+                            "action": "userlogin",
+                            "username": $("#username").val(),
+                            "password": $("#password").val()
+                        },
+                        dataType: "json",
+                        success: function(data) {
+                            if (data.msg == "1") {
+                                document.cookie = "username=" + $("#username").val() + "; 	max-age=" + 100 * 60 + "; ";
+                                location.href = "index.html";
+                                console.log(data);
+                            } else {
+                                window.alert(data.msgbox);
+                                console.log(data);
+                            }
+                        }
+                    });
+                }
+                )
+                $('#regist').click(()=>{
+                    $.post("HttpHandler/loginHandler.ashx", {
+                        "action": "userregist",
+                        "username": $("#username").val(),
+                        "password": $("#password").val()
+                    }, function(data) {
+                        if (data.msg == "1") {
+                            window.alert(data.msgbox);
+                            console.log(data);
+                        } else {
+                            window.alert(data.msgbox);
+                            console.log(data);
+                        }
+                    }, "json");
+                }
+                );
+            });
+        </script>
+    </body>
+</html>
