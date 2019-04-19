@@ -56,17 +56,17 @@ var styleBlue = new ol.style.Style({
     }))
 });
 var vector = new ol.layer.Vector({
-    title:'人员1',
+    title: '人员1',
     zIndex: 1,
     source: new ol.source.Vector()
 });
 var vector2 = new ol.layer.Vector({
-    title:'人员2',
+    title: '人员2',
     zIndex: 1,
     source: new ol.source.Vector()
 });
 var vector3 = new ol.layer.Vector({
-    title:'人员3',
+    title: '人员3',
     zIndex: 1,
     source: new ol.source.Vector()
 });
@@ -138,13 +138,10 @@ function showMenu(event, treeId, treeNode) {
     }
 
     // 不同节点显示的菜单可能不一样
-    if ('root' === type) {
-        $('#menu-item-delete').hide();
-        $('#menu-item-rename').hide();
-    } else {
-        $('#menu-item-delete').show();
-        $('#menu-item-rename').show();
-    }
+    //     if ('root' === type) 
+
+    $('#menu-item-delete').show();
+    $('#menu-item-rename').show();
 
     $('#directory-tree-menu').css({
         left: x + 'px',
@@ -161,3 +158,4 @@ function hideMenu() {
     $('#directory-tree-menu').hide();
     $(document).off('mousedown');
 }
+

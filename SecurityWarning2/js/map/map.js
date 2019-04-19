@@ -49,7 +49,7 @@ var Railway = new ol.layer.Tile({
 var safeArea = new ol.layer.Vector({
     title: '安全区',
     source: new ol.source.Vector({
-        url: 'http://localhost:8080/geoserver/myWorkSpace/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=myWorkSpace%3AsafeArea&maxFeatures=50&outputFormat=application%2Fjson',
+        url: 'http://localhost:8080/geoserver/myWorkSpace/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=myWorkSpace%3AsafeArea_Origin&maxFeatures=50&outputFormat=application%2Fjson',
         format: new ol.format.GeoJSON()
     })
 });
@@ -416,11 +416,14 @@ $(function() {
     )
     $('#undoAdded').click(()=>{
         //移除第一个lineLayerSource.removeFeature(lineLayerFeatures[0])
-        var lineLayerFeatures = lineLayerSource.getFeatures();
-        if (lineLayerFeatures.length > 0) {
-            // 移除最后一个
-            lineLayerSource.removeFeature(lineLayerFeatures[lineLayerFeatures.length - 1])
+        if (lineLayerSource != undefined) {
+            var lineLayerFeatures = lineLayerSource.getFeatures();
+            if (lineLayerFeatures.length > 0) {
+                // 移除最后一个
+                lineLayerSource.removeFeature(lineLayerFeatures[lineLayerFeatures.length - 1])
+            }
         }
+
     }
     )
     $('#cancelAdd').click(()=>{
@@ -550,7 +553,7 @@ function queryWfs() {
     safeArea = new ol.layer.Vector({
         title: '安全区',
         source: new ol.source.Vector({
-            url: 'http://localhost:8080/geoserver/myWorkSpace/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=myWorkSpace%3AsafeArea&maxFeatures=50&outputFormat=application%2Fjson',
+            url: 'http://localhost:8080/geoserver/myWorkSpace/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=myWorkSpace%3AsafeArea_Origin&maxFeatures=50&outputFormat=application%2Fjson',
             format: new ol.format.GeoJSON()
         })
     });
@@ -560,11 +563,12 @@ function queryWfs() {
     });
     map.addLayer(layersToMap)
 }
+var wfsFeatureType='safeArea_Origin';
 // 把修改提交到服务器端
 function modifyWfs(features) {
     var WFSTSerializer = new ol.format.WFS();
     var featObject = WFSTSerializer.writeTransaction(null, features, null, {
-        featureType: 'safeArea',
+        featureType: wfsFeatureType,
         featureNS: 'myWorkSpaceURI',
     });
     // 转换为xml内容发送到服务器端
@@ -580,7 +584,7 @@ function modifyWfs(features) {
 function addWfs(features) {
     var WFSTSerializer = new ol.format.WFS();
     var featObject = WFSTSerializer.writeTransaction(features, null, null, {
-        featureType: 'safeArea',
+        featureType: wfsFeatureType,
         featureNS: 'myWorkSpaceURI',
     });
     var serializer = new XMLSerializer();
@@ -595,7 +599,7 @@ function addWfs(features) {
 function deleteWfs(features) {
     var WFSTSerializer = new ol.format.WFS();
     var featObject = WFSTSerializer.writeTransaction(null, null, features, {
-        featureType: 'safeArea',
+        featureType: wfsFeatureType,
         featureNS: 'myWorkSpaceURI'
     });
     var serializer = new XMLSerializer();
