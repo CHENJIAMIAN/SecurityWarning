@@ -9,7 +9,7 @@ $(function() {
             anim: 2,closeBtn: 0,
             shade: false,
             area: ['200px', '200px'],
-            offset: ['300px', '500px'],
+            offset: ['300px', '10px'],
             //宽高
             content: '<ul class="list-group">  <li class="list-group-item">人员1</li>  <li class="list-group-item">人员2</li>  <li class="list-group-item">人员3</li>   </ul>'
         });

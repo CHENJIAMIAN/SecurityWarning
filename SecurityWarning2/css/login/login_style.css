@@ -5,7 +5,7 @@
 body {
     font-family: Helvetica;
     -webkit-font-smoothing: antialiased;
-    background: url("https://www.12306.cn/index/images/pic/banner19.jpg") no-repeat fixed;
+    background: url("../../img/bg.jpg") no-repeat fixed;
     background-size: cover;
 }
 

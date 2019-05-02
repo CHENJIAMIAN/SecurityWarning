@@ -79,8 +79,9 @@ var map = new ol.Map({
     layers: [layersToMap],
     //地图视图设置
     view: new ol.View({
-        center: ol.proj.fromLonLat([116.21582584430769, 39.84043238561958]),
-        zoom: 14
+        center: ol.proj.fromLonLat([112.91940620072556, 27.907336633266738]),
+        //科大坐标 112.91940620072556,27.907336633266738  //北京铁路坐标：116.21582584430769, 39.84043238561958
+        zoom: 17
 
     }),
     controls: ol.control.defaults().extend([//加载空控件
@@ -563,7 +564,7 @@ function queryWfs() {
     });
     map.addLayer(layersToMap)
 }
-var wfsFeatureType='safeArea_Origin';
+var wfsFeatureType = 'safeArea_Origin';
 // 把修改提交到服务器端
 function modifyWfs(features) {
     var WFSTSerializer = new ol.format.WFS();
@@ -644,3 +645,16 @@ $(document).keydown(function(event) {
         }
     }
 });
+function getPositionFromBomb() {
+    fetch("https://api2.bmob.cn/1/classes/position/b5bbd688b1", {
+        headers: {
+            'X-Bmob-Application-Id': 'ae69ae4ad1b9328f1993c62a637454a7',
+            'X-Bmob-REST-API-Key': '05d377b293e63f9f9e22788154af1449',
+        },
+        method: 'GET',
+    }).then(response=>response.json()).then(function(result) {
+        console.log('lon', result.lon, 'lat', result.lat)
+    })
+}
+
+setInterval(getPositionFromBomb, 1000)

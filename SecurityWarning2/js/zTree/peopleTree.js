@@ -138,7 +138,7 @@ function showMenu(event, treeId, treeNode) {
     }
 
     // 不同节点显示的菜单可能不一样
-    //     if ('root' === type) 
+    if ('root' === type) return;
 
     $('#menu-item-delete').show();
     $('#menu-item-rename').show();
