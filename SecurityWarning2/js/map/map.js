@@ -645,16 +645,4 @@ $(document).keydown(function(event) {
         }
     }
 });
-function getPositionFromBomb() {
-    fetch("https://api2.bmob.cn/1/classes/position/b5bbd688b1", {
-        headers: {
-            'X-Bmob-Application-Id': 'ae69ae4ad1b9328f1993c62a637454a7',
-            'X-Bmob-REST-API-Key': '05d377b293e63f9f9e22788154af1449',
-        },
-        method: 'GET',
-    }).then(response=>response.json()).then(function(result) {
-        console.log('lon', result.lon, 'lat', result.lat)
-    })
-}
 
-setInterval(getPositionFromBomb, 1000)

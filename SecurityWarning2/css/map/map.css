@@ -33,7 +33,7 @@
 }
 .mapCon-noLeftSide {
     position: absolute;
-    height: calc(100% - 101px);
+    height: calc(100% - 50px);
     width: 100%;
 }
 .mapOp {
