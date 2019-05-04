@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>铁路人员位置安全预警系统</title>
+        <title>人员位置安全预警系统</title>
         <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
         <!-- bootstrap 3.0.2 -->
         <link href="css/bootstrap.css" rel="stylesheet" type="text/css"/>
@@ -250,7 +250,7 @@
             }
         </SCRIPT>
         <!-- jQuery UI 1.10.3 -->
-<!--         <script src="js/jquery-ui-1.10.3.min.js" type="text/javascript"></script> -->
+        <!--         <script src="js/jquery-ui-1.10.3.min.js" type="text/javascript"></script> -->
         <!-- Bootstrap -->
         <script src="js/bootstrap.js" type="text/javascript"></script>
         <!-- AdminLTE App -->
@@ -273,10 +273,9 @@
         <!--OpenLayer与zTree联动控制图层-->
         <SCRIPT src="js/zTree/layerTree.js" type="text/javascript"></SCRIPT>
         <SCRIPT src="js/zTree/peopleTree.js" type="text/javascript"></SCRIPT>
-      
         <script>
-            //加载用户表到 导航-用户
             $(()=>{
+                //加载用户表到 导航-用户
                 $.post("HttpHandler/loginHandler.ashx", {
                     "action": "queryuser"
                 }, function(data) {
@@ -292,6 +291,8 @@
                     $("#user tbody").append(str);
 
                 }, "json");
+
+
             }
             );
         </script>

@@ -43,6 +43,7 @@ $(()=>{
             pointFeaturePhonePeo.setId(4)
             pointFeaturePhonePeo.setStyle(styleBlue)
             vectorPhonePeo.getSource().addFeature(pointFeaturePhonePeo);
+            //每隔3s，从Bmob云数据库，获取位置
             function getPositionFromBomb() {
                 fetch("https://api2.bmob.cn/1/classes/position/b5bbd688b1", {
                     headers: {
@@ -51,12 +52,12 @@ $(()=>{
                     },
                     method: 'GET',
                 }).then(response=>response.json()).then(function(result) {
-                    console.log('手机人员实时位置:lon', result.lon, 'lat', result.lat)
+                    //console.log('手机人员实时位置:lon', result.lon, 'lat', result.lat)
                     vectorPhonePeo.getSource().getFeatures()[0].getGeometry().setCoordinates(ol.proj.fromLonLat([result.lon, result.lat]));
 
                 })
             }
-
+            getPositionFromBomb();
             setInterval(getPositionFromBomb, 3000)
 
         }
@@ -89,6 +90,7 @@ $(()=>{
         vector3.getSource().addFeature(pointFeature3);
         //var pointFeatures = [pointFeature, pointFeature2, pointFeature3]
     }
+
     //初始化人员树,绑定选中事件
     {
         var setting = {
@@ -210,7 +212,7 @@ $(()=>{
         }
     }
 
-    //<!--模拟人员进入安全区-->
+    //模拟人员进入安全区
     {
         //弹窗报警
         layertipIndex = layer.open({
@@ -278,13 +280,6 @@ $(()=>{
                 runPeopleMove(cid2, vector3, 0, 3);
             }
             , 50)
-            //手机人员是否安全
-            setInterval(()=>{
-                var pt = turf.point(vectorPhonePeo.getSource().getFeatures()[0].getGeometry().getFlatCoordinates());
-                var isSafe = isInPoly(pt);
-                renderWarning(vectorPhonePeo, pointFeaturePhonePeo, isSafe);
-            }
-            , 50)
 
         }
         )
@@ -295,7 +290,7 @@ $(()=>{
         });
 
         //是否在安全区内,用的是平面坐标
-        var isInPoly = function(pt) {
+        function isInPoly(pt) {
             for (var i = 0; i < safeArea.getSource().getFeatures().length; i++) {
                 //遍历安全区是否相交
                 var poly = turf.polygon(safeArea.getSource().getFeatures()[i].getGeometry().getCoordinates()[0]);
@@ -311,14 +306,14 @@ $(()=>{
                 //人物变红
                 pointFeature.setStyle(styleRed);
                 //layer的人员变红
-                $('#'+vector.values_.title).css('background', 'red')
+                $('#' + vector.values_.title).css('background', 'red')
                 //警报灯亮
                 $('#alertLightOn').show();
                 $('#alertLightOff').hide();
             } else {
                 //人物变蓝
                 pointFeature.setStyle(styleBlue)
-                $('#'+vector.values_.title).css('background', '')
+                $('#' + vector.values_.title).css('background', '')
                 $('#alertLightOn').hide();
                 $('#alertLightOff').show();
             }
@@ -361,5 +356,32 @@ $(()=>{
 
     }
 
+    //1s 判断一次，手机人员是否安全，并上传IsSafe到Bmob云数据库
+    {
+        setInterval(()=>{
+            var pt = turf.point(vectorPhonePeo.getSource().getFeatures()[0].getGeometry().getFlatCoordinates());
+            var isSafe = isInPoly(pt);
+            renderWarning(vectorPhonePeo, pointFeaturePhonePeo, isSafe);
+            var isSafenum = 0;
+            if (isSafe) {
+                isSafenum = 1;
+            } else {
+                isSafenum = 0;
+            }
+
+            //上传IsSafe到Bmob云数据库
+            fetch("https://api2.bmob.cn/1/classes/IsSafe/23611c62ee", {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Bmob-Application-Id': 'ae69ae4ad1b9328f1993c62a637454a7',
+                    'X-Bmob-REST-API-Key': '05d377b293e63f9f9e22788154af1449',
+                },
+                method: 'PUT',
+                body: '{"isSafe":' + isSafenum + '}',
+            }).then(response=>response.json()).then(function(result) { //console.log('put isSafe 结果', result)
+            })
+        }
+        , 1000)
+    }
 }
 );
