@@ -1,5 +1,5 @@
 $(()=>{
-    //添加人员 图层到地图
+    //添加人员 图层到地图  遍历显示手机端发送来的 所有人员
     {
         var styleBlue = new ol.style.Style({
             image: new ol.style.Icon(({
@@ -27,40 +27,100 @@ $(()=>{
         map.addLayer(vector);
         map.addLayer(vector2);
         map.addLayer(vector3);
-        //显示手机端发送来的人员
-        {
-            vectorPhonePeo = new ol.layer.Vector({
-                title: '手机人员',
-                treeNdoeId: 4,
-                zIndex: 1,
-                source: new ol.source.Vector()
-            });
-            map.addLayer(vectorPhonePeo);
-            var pointPhonePeo = new ol.geom.Point(ol.proj.fromLonLat([0, 0]));
-            var pointFeaturePhonePeo = new ol.Feature({
-                geometry: pointPhonePeo,
-            });
-            pointFeaturePhonePeo.setId(4)
-            pointFeaturePhonePeo.setStyle(styleBlue)
-            vectorPhonePeo.getSource().addFeature(pointFeaturePhonePeo);
-            //每隔3s，从Bmob云数据库，获取位置
-            function getPositionFromBomb() {
-                fetch("https://api2.bmob.cn/1/classes/position/b5bbd688b1", {
-                    headers: {
-                        'X-Bmob-Application-Id': 'ae69ae4ad1b9328f1993c62a637454a7',
-                        'X-Bmob-REST-API-Key': '05d377b293e63f9f9e22788154af1449',
-                    },
-                    method: 'GET',
-                }).then(response=>response.json()).then(function(result) {
-                    //console.log('手机人员实时位置:lon', result.lon, 'lat', result.lat)
-                    vectorPhonePeo.getSource().getFeatures()[0].getGeometry().setCoordinates(ol.proj.fromLonLat([result.lon, result.lat]));
 
-                })
-            }
-            getPositionFromBomb();
-            setInterval(getPositionFromBomb, 3000)
+        //遍历显示手机端发送来的 所有人员
+        vectorPhonePeo = new ol.layer.Vector({
+            title: '手机人员',
+            treeNdoeId: 4,
+            zIndex: 1,
+            source: new ol.source.Vector()
+        });
+        map.addLayer(vectorPhonePeo);
+        setInterval(()=>{
+            fetch('https://api2.bmob.cn/1/classes/position', {
+                headers: {
+                    'X-Bmob-Application-Id': 'ae69ae4ad1b9328f1993c62a637454a7',
+                    'X-Bmob-REST-API-Key': '05d377b293e63f9f9e22788154af1449',
+                },
+                method: 'GET',
+            }).then(response=>response.json()).then(function(result) {
+                for (var i = 0; i < result.results.length; i++) {
+                    if (vectorPhonePeo.getSource().getFeatures().length != result.results.length) {
+                        var pointGeom = new ol.geom.Point(ol.proj.fromLonLat([result.results[i].lon, result.results[i].lat]));
+                        var pointFeaturePhonePeo = new ol.Feature();
+                        pointFeaturePhonePeo.setGeometryName(result.results[i].name);
+                        pointFeaturePhonePeo.setGeometry(pointGeom)
+                        pointFeaturePhonePeo.setStyle(styleBlue)
+                        vectorPhonePeo.getSource().addFeature(pointFeaturePhonePeo);
+                    } else {
+                        vectorPhonePeo.getSource().getFeatures().forEach((elem)=>{
+                            if (elem.getGeometryName() == result.results[i].name) {
+                                elem.getGeometry().setCoordinates(ol.proj.fromLonLat([result.results[i].lon, result.results[i].lat]));
+                            }
+                            //else {
+                            //                                 var pointGeom = new ol.geom.Point(ol.proj.fromLonLat([result.results[i].lon, result.results[i].lat]));
+                            //                                 var pointFeaturePhonePeo = new ol.Feature();
+                            //                                 pointFeaturePhonePeo.setGeometryName(result.results[i].name);
+                            //                                 pointFeaturePhonePeo.setGeometry(pointGeom)
+                            //                                 pointFeaturePhonePeo.setStyle(styleBlue)
+                            //                                 vectorPhonePeo.getSource().addFeature(pointFeaturePhonePeo);
+                            //                             }
+                        }
+                        )
+                    }
 
+                }
+
+            })
         }
+        , 2000);
+        //1s 判断一次，手机人员是否安全，并上传IsSafe到Bmob云数据库
+        {
+            setInterval(()=>{
+                var boolAllSafe = true;
+                vectorPhonePeo.getSource().getFeatures().forEach((elem)=>{
+                    var pt = turf.point(elem.getGeometry().getFlatCoordinates());
+                    var isSafe = isInPoly(pt);
+
+                    renderWarning(vectorPhonePeo, elem, isSafe);
+                    var isSafenum = 0;
+                    if (isSafe) {
+                        isSafenum = 1;
+                    } else {
+                        isSafenum = 0;
+                        boolAllSafe = false;
+                    }
+                    //上传IsSafe到Bmob云数据库
+                    fetch('https://api2.bmob.cn/1/classes/IsSafe?where={"name":"' + elem.getGeometryName() + '"}', {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Bmob-Application-Id': 'ae69ae4ad1b9328f1993c62a637454a7',
+                            'X-Bmob-REST-API-Key': '05d377b293e63f9f9e22788154af1449',
+                        },
+                        method: 'PUT',
+                        body: '{"isSafe":' + isSafenum + '}',
+                    })
+                    //.then(response=>response.json()).then(function(result) {//console.log('put isSafe 结果', result)
+                    //                     })
+                }
+                );
+                if (boolAllSafe) //所有人员 都安全
+                {
+                    $('#' + "手机人员").css('background', '')
+                    $('#alertLightOn').hide();
+                    $('#alertLightOff').show();
+
+                } else {
+                    //layer的人员变红
+                    $('#' + "手机人员").css('background', 'red')
+                    //警报灯亮
+                    $('#alertLightOn').show();
+                    $('#alertLightOff').hide();
+                }
+            }
+            , 1000)
+        }
+
         var point1 = new ol.geom.Point(ol.proj.fromLonLat([116.20063511, 39.85862116]));
         var point2 = new ol.geom.Point(ol.proj.fromLonLat([116.21810105, 39.83500744]));
         var point3 = new ol.geom.Point(ol.proj.fromLonLat([116.23814219, 39.82811664]));
@@ -212,7 +272,7 @@ $(()=>{
         }
     }
 
-    //模拟人员进入安全区
+    //模拟人员离开安全区
     {
         //弹窗报警
         layertipIndex = layer.open({
@@ -356,32 +416,5 @@ $(()=>{
 
     }
 
-    //1s 判断一次，手机人员是否安全，并上传IsSafe到Bmob云数据库
-    {
-        setInterval(()=>{
-            var pt = turf.point(vectorPhonePeo.getSource().getFeatures()[0].getGeometry().getFlatCoordinates());
-            var isSafe = isInPoly(pt);
-            renderWarning(vectorPhonePeo, pointFeaturePhonePeo, isSafe);
-            var isSafenum = 0;
-            if (isSafe) {
-                isSafenum = 1;
-            } else {
-                isSafenum = 0;
-            }
-
-            //上传IsSafe到Bmob云数据库
-            fetch("https://api2.bmob.cn/1/classes/IsSafe/23611c62ee", {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Bmob-Application-Id': 'ae69ae4ad1b9328f1993c62a637454a7',
-                    'X-Bmob-REST-API-Key': '05d377b293e63f9f9e22788154af1449',
-                },
-                method: 'PUT',
-                body: '{"isSafe":' + isSafenum + '}',
-            }).then(response=>response.json()).then(function(result) { //console.log('put isSafe 结果', result)
-            })
-        }
-        , 1000)
-    }
 }
 );
