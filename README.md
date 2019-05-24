@@ -1,0 +1,9 @@
+# SecurityWarning
+WebGIS, 基于openlayers等, 用于位置安全预警, 配合testGeoPosition安卓客户端使用
+
+----
+`App_Code`
+`HttpHandler`
+1. 用于处理Http登录请求
+2. 用于与本地数据库交互
+----
